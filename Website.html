@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formelsammlung – Apple Design</title>
+    <!-- Tailwind CSS für modernes Layout & Apple-ähnliche Utility Klassen -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- KaTeX für mathematischen Formelsatz (LaTeX) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <!-- Chart.js für Plots -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background-color: #f5f5f7;
+            color: #1d1d1f;
+            -webkit-font-smoothing: antialiased;
+        }
+        .apple-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .apple-card {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .apple-card:hover {
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+        .apple-button {
+            background: #0071e3;
+            color: white;
+            transition: background 0.2s ease, transform 0.1s ease;
+        }
+        .apple-button:hover {
+            background: #0077ed;
+        }
+        .apple-button:active {
+            transform: scale(0.98);
+        }
+        .apple-input {
+            background: #fbfbfd;
+            border: 1px solid #d2d2d7;
+            transition: all 0.2s ease;
+        }
+        .apple-input:focus {
+            background: #ffffff;
+            border-color: #0071e3;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navigation / Header -->
+    <header class="sticky top-0 z-50 apple-glass border-b border-gray-200/60 px-6 py-4">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md">
+                    <i data-lucide="function-square" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-semibold tracking-tight">Formelsammlung</h1>
+                    <p class="text-xs text-gray-500">Apple HIG Design Standard</p>
+                </div>
+            </div>
+
+            <!-- Such- und Filterleiste -->
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <div class="relative flex-1 sm:w-72">
+                    <i data-lucide="search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Formel suchen..." class="apple-input w-full pl-9 pr-4 py-2 rounded-xl text-sm">
+                </div>
+                <button onclick="openAddModal()" class="apple-button px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 whitespace-nowrap shadow-sm">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Neue Formel
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hauptbereich -->
+    <main class="max-w-6xl mx-auto px-6 py-8 flex-1 w-full">
+        <!-- Filter nach Fachrichtung -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 no-scrollbar" id="disciplineFilters">
+            <button onclick="filterDiscipline('Alle')" class="filter-btn px-4 py-1.5 rounded-full text-xs font-medium bg-gray-900 text-white transition-all shadow-sm">Alle</button>
+        </div>
+
+        <!-- Formel Raster -->
+        <div id="formulaGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Dynamisch gefüllt -->
+        </div>
+
+        <!-- Keine Ergebnisse State -->
+        <div id="noResults" class="hidden text-center py-16">
+            <i data-lucide="folder-search" class="w-12 h-12 text-gray-300 mx-auto mb-3"></i>
+            <h3 class="text-lg font-medium text-gray-700">Keine Formeln gefunden</h3>
+            <p class="text-sm text-gray-500 mt-1">Versuche einen anderen Suchbegriff oder füge eine neue Formel hinzu.</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200/60 py-6 text-center text-xs text-gray-400">
+        <p>&copy; 2026 Formelsammlung. Entworfen nach Apple Design Richtlinien.</p>
+    </footer>
+
+    <!-- MODAL: Neue Formel hinzufügen -->
+    <div id="addModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="apple-card bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div class="flex items-center justify-between mb-5">
+                <h2 class="text-lg font-semibold">Neue Formel hinzufügen</h2>
+                <button onclick="closeAddModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="addFormulaForm" onsubmit="saveNewFormula(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Titel</label>
+                    <input type="text" id="newTitle" required placeholder="z.B. Kinetische Energie" class="apple-input w-full px-3 py-2 rounded-xl text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Fachrichtung</label>
+                        <input type="text" id="newDiscipline" required placeholder="z.B. Physik" class="apple-input w-full px-3 py-2 rounded-xl text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Kategorie</label>
+                        <input type="text" id="newCategory" required placeholder="z.B. Mechanik" class="apple-input w-full px-3 py-2 rounded-xl text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">LaTeX Formel (z.B. E_k = \frac{1}{2} m v^2)</label>
+                    <input type="text" id="newLatex" required placeholder="E_k = \frac{1}{2} m v^2" class="apple-input w-full px-3 py-2 rounded-xl text-sm font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Beschreibung</label>
+                    <textarea id="newDescription" rows="2" required placeholder="Kurze Erklärung..." class="apple-input w-full px-3 py-2 rounded-xl text-sm"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Legende (Format: Zeichen: Bedeutung, Komma-getrennt)</label>
+                    <input type="text" id="newLegend" required placeholder="E_k: Energie [J], m: Masse [kg], v: Geschwindigkeit [m/s]" class="apple-input w-full px-3 py-2 rounded-xl text-sm">
+                </div>
+                <div class="pt-3 flex justify-end gap-3">
+                    <button type="button" onclick="closeAddModal()" class="px-4 py-2 rounded-xl text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700">Abbrechen</button>
+                    <button type="submit" class="apple-button px-5 py-2 rounded-xl text-sm font-medium">Hinzufügen & Einsortieren</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Plot-Ansicht -->
+    <div id="plotModal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="apple-card bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 id="plotTitle" class="text-lg font-semibold">Formel Plot</h2>
+                    <p id="plotSubtitle" class="text-xs text-gray-500"></p>
+                </div>
+                <button onclick="closePlotModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 h-80 flex items-center justify-center">
+                <canvas id="formulaChart"></canvas>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button onclick="closePlotModal()" class="px-4 py-2 rounded-xl text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logik -->
+    <script>
+        // Formel-Datenbank mit Hinterlegten Umstellungen
+        let formulas = [
+            {
+                id: 1,
+                title: "Ohmsches Gesetz",
+                discipline: "Elektrotechnik",
+                category: "Grundlagen",
+                latex: "U = R \\cdot I",
+                description: "Beschreibt den Zusammenhang zwischen elektrischer Spannung, Stromstärke und elektrischem Widerstand in einem linearen Stromkreis.",
+                legend: {
+                    "U": "Elektrische Spannung [V]",
+                    "R": "Elektrischer Widerstand [Ω]",
+                    "I": "Elektrische Stromstärke [A]"
+                },
+                variables: ["U", "R", "I"],
+                rearrangements: {
+                    "U": "U = R \\cdot I",
+                    "R": "R = \\frac{U}{I}",
+                    "I": "I = \\frac{U}{R}"
+                },
+                plottable: true,
+                plotConfig: { xVar: "I", yVar: "U", defaultParamVal: 10, label: "U(I) bei R = 10 Ω" }
+            },
+            {
+                id: 2,
+                title: "Kinetische Energie",
+                discipline: "Physik",
+                category: "Mechanik",
+                latex: "E_k = \\frac{1}{2} \\cdot m \\cdot v^2",
+                description: "Die Energie, die ein Körper aufgrund seiner Bewegung besitzt.",
+                legend: {
+                    "E_k": "Kinetische Energie [J]",
+                    "m": "Masse des Körpers [kg]",
+                    "v": "Geschwindigkeit [m/s]"
+                },
+                variables: ["E_k", "m", "v"],
+                rearrangements: {
+                    "E_k": "E_k = \\frac{1}{2} m v^2",
+                    "m": "m = \\frac{2 E_k}{v^2}",
+                    "v": "v = \\sqrt{\\frac{2 E_k}{m}}"
+                },
+                plottable: true,
+                plotConfig: { xVar: "v", yVar: "E_k", defaultParamVal: 2, label: "E_k(v) bei m = 2 kg" }
+            },
+            {
+                id: 3,
+                title: "Kreisfläche",
+                discipline: "Mathematik",
+                category: "Geometrie",
+                latex: "A = \\pi \\cdot r^2",
+                description: "Berechnet die Fläche eines Kreises anhand seines Radius.",
+                legend: {
+                    "A": "Flächeninhalt [m²]",
+                    "\\pi": "Kreiszahl Pi (≈ 3.14159)",
+                    "r": "Radius [m]"
+                },
+                variables: ["A", "r"],
+                rearrangements: {
+                    "A": "A = \\pi r^2",
+                    "r": "r = \\sqrt{\\frac{A}{\\pi}}"
+                },
+                plottable: true,
+                plotConfig: { xVar: "r", yVar: "A", defaultParamVal: null, label: "A(r)" }
+            }
+        ];
+
+        // Aktuelle umgestellte LaTeX-Strings pro Formel-ID für den Kopiervorgang
+        let activeRearrangedLatex = {};
+        let currentActiveDiscipline = "Alle";
+        let chartInstance = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderDisciplineFilters();
+            renderFormulas();
+            lucide.createIcons();
+
+            document.getElementById("searchInput").addEventListener("input", () => {
+                renderFormulas();
+            });
+        });
+
+        function renderDisciplineFilters() {
+            const container = document.getElementById("disciplineFilters");
+            const disciplines = ["Alle", ...new Set(formulas.map(f => f.discipline))].sort();
+
+            container.innerHTML = disciplines.map(disc => `
+                <button onclick="filterDiscipline('${disc}')" class="filter-btn px-4 py-1.5 rounded-full text-xs font-medium transition-all shadow-sm whitespace-nowrap ${currentActiveDiscipline === disc ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'}">
+                    ${disc}
+                </button>
+            `).join('');
+        }
+
+        function filterDiscipline(disc) {
+            currentActiveDiscipline = disc;
+            renderDisciplineFilters();
+            renderFormulas();
+        }
+
+        function renderFormulas() {
+            const grid = document.getElementById("formulaGrid");
+            const noResults = document.getElementById("noResults");
+            const query = document.getElementById("searchInput").value.toLowerCase();
+
+            const filtered = formulas.filter(f => {
+                const matchesDisc = currentActiveDiscipline === "Alle" || f.discipline === currentActiveDiscipline;
+                const matchesQuery = f.title.toLowerCase().includes(query) || 
+                                     f.category.toLowerCase().includes(query) || 
+                                     f.discipline.toLowerCase().includes(query) ||
+                                     f.description.toLowerCase().includes(query);
+                return matchesDisc && matchesQuery;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = "";
+                noResults.classList.remove("hidden");
+                return;
+            }
+
+            noResults.classList.add("hidden");
+
+            grid.innerHTML = filtered.map(f => {
+                let legendHtml = Object.entries(f.legend).map(([k, v]) => 
+                    `<li class="flex items-center gap-2 text-xs"><code class="px-1.5 py-0.5 rounded bg-gray-100 font-mono text-gray-800 font-semibold">${k}</code> <span class="text-gray-600">= ${v}</span></li>`
+                ).join('');
+
+                let varOptions = f.variables.map(v => 
+                    `<option value="${v}">${v}</option>`
+                ).join('');
+
+                return `
+                    <div class="apple-card rounded-2xl p-6 flex flex-col justify-between">
+                        <div>
+                            <!-- Header & Tools -->
+                            <div class="flex items-start justify-between gap-2 mb-3">
+                                <div>
+                                    <h3 class="font-semibold text-base text-gray-900">${f.title}</h3>
+                                    <p class="text-xs text-gray-500">${f.discipline} &bull; ${f.category}</p>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    ${f.plottable ? `<button onclick="openPlotModal(${f.id})" title="Plot anzeigen" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition"><i data-lucide="line-chart" class="w-4 h-4"></i></button>` : ''}
+                                    <button onclick="copyLatex(getOriginalLatex(${f.id}), this)" title="Original LaTeX kopieren" class="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition flex items-center gap-1 text-xs">
+                                        <i data-lucide="copy" class="w-4 h-4"></i> Original
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Hauptformel -->
+                            <div class="my-4 p-4 rounded-xl bg-gray-50/80 border border-gray-100 text-center overflow-x-auto">
+                                <div id="latex-render-${f.id}" class="text-lg font-mono"></div>
+                            </div>
+
+                            <!-- Beschreibung -->
+                            <p class="text-xs text-gray-600 mb-4 leading-relaxed">${f.description}</p>
+
+                            <!-- Umstellung nach Variable mit integrierter Kopierfunktion -->
+                            ${f.rearrangements ? `
+                            <div class="mb-4 p-3 rounded-xl bg-blue-50/50 border border-blue-100/60">
+                                <div class="flex items-center justify-between gap-2 mb-2">
+                                    <span class="text-xs font-medium text-blue-900 flex items-center gap-1.5">
+                                        <i data-lucide="git-commit" class="w-3.5 h-3.5"></i> Umstellen nach:
+                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        <select onchange="updateRearrangement(${f.id}, this.value)" class="apple-input text-xs px-2 py-1 rounded-lg">
+                                            ${varOptions}
+                                        </select>
+                                        <button onclick="copyRearrangedLatex(${f.id}, this)" title="Umgestellte Formel als LaTeX kopieren" class="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition flex items-center gap-1 shadow-sm">
+                                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Umstellung
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="rearranged-render-${f.id}" class="text-sm font-mono text-center py-1 text-blue-950 font-medium"></div>
+                            </div>` : ''}
+
+                            <!-- Legende -->
+                            <div class="border-t border-gray-100 pt-3 mt-3">
+                                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Legende</span>
+                                <ul class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                    ${legendHtml}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // LaTeX rendern & Umstellungen initialisieren
+            filtered.forEach(f => {
+                try {
+                    katex.render(f.latex, document.getElementById(`latex-render-${f.id}`), { displayMode: true, throwOnError: false });
+                    if (f.rearrangements && f.variables.length > 0) {
+                        updateRearrangement(f.id, f.variables[0]);
+                    }
+                } catch(e) {
+                    console.error("KaTeX error:", e);
+                }
+            });
+
+            lucide.createIcons();
+        }
+
+        function getOriginalLatex(id) {
+            const f = formulas.find(item => item.id === id);
+            return f ? f.latex : '';
+        }
+
+        // Umgestellte Formel aktualisieren und aktuellen LaTeX-Wert sichern
+        function updateRearrangement(id, variable) {
+            const f = formulas.find(item => item.id === id);
+            if (!f || !f.rearrangements) return;
+            const targetLatex = f.rearrangements[variable] || f.latex;
+            
+            // Speichere den aktuellen Umstellungs-LaTeX-String
+            activeRearrangedLatex[id] = targetLatex;
+
+            const container = document.getElementById(`rearranged-render-${id}`);
+            container.innerHTML = "";
+            try {
+                katex.render(targetLatex, container, { displayMode: false, throwOnError: false });
+            } catch(e) {
+                container.innerText = targetLatex;
+            }
+        }
+
+        // Kopieren des Original-LaTeX
+        function copyLatex(latex, btn) {
+            navigator.clipboard.writeText(latex).then(() => {
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-green-600"></i> Kopiert!`;
+                lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    lucide.createIcons();
+                }, 1500);
+            });
+        }
+
+        // Kopieren der umgestellten LaTeX-Formel
+        function copyRearrangedLatex(id, btn) {
+            const latexToCopy = activeRearrangedLatex[id] || getOriginalLatex(id);
+            navigator.clipboard.writeText(latexToCopy).then(() => {
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-white"></i> Kopiert!`;
+                lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    lucide.createIcons();
+                }, 1500);
+            });
+        }
+
+        function openAddModal() {
+            document.getElementById("addModal").classList.remove("hidden");
+        }
+        function closeAddModal() {
+            document.getElementById("addModal").classList.add("hidden");
+            document.getElementById("addFormulaForm").reset();
+        }
+
+        function saveNewFormula(event) {
+            event.preventDefault();
+            const title = document.getElementById("newTitle").value.trim();
+            const discipline = document.getElementById("newDiscipline").value.trim();
+            const category = document.getElementById("newCategory").value.trim();
+            const latex = document.getElementById("newLatex").value.trim();
+            const description = document.getElementById("newDescription").value.trim();
+            const legendRaw = document.getElementById("newLegend").value.trim();
+
+            let legend = {};
+            legendRaw.split(',').forEach(item => {
+                const parts = item.split(':');
+                if (parts.length === 2) {
+                    legend[parts[0].trim()] = parts[1].trim();
+                }
+            });
+
+            const variables = Object.keys(legend);
+            let rearrangements = {};
+            variables.forEach(v => {
+                rearrangements[v] = `${v} = \\dots`;
+            });
+            if(variables.length > 0) {
+                rearrangements[variables[0]] = latex;
+            }
+
+            const newFormula = {
+                id: Date.now(),
+                title,
+                discipline,
+                category,
+                latex,
+                description,
+                legend,
+                variables,
+                rearrangements,
+                plottable: false
+            };
+
+            formulas.push(newFormula);
+
+            formulas.sort((a, b) => {
+                if (a.discipline === b.discipline) {
+                    return a.title.localeCompare(b.title);
+                }
+                return a.discipline.localeCompare(b.discipline);
+            });
+
+            closeAddModal();
+            renderDisciplineFilters();
+            renderFormulas();
+        }
+
+        function openPlotModal(id) {
+            const f = formulas.find(item => item.id === id);
+            if (!f || !f.plottable) return;
+
+            document.getElementById("plotTitle").innerText = f.title;
+            document.getElementById("plotSubtitle").innerText = f.plotConfig.label || f.latex;
+            document.getElementById("plotModal").classList.remove("hidden");
+
+            const ctx = document.getElementById("formulaChart").getContext("2d");
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            let xValues = [];
+            let yValues = [];
+
+            for (let x = 0; x <= 10; x += 0.5) {
+                xValues.push(x);
+                let y = 0;
+                if (f.id === 1) {
+                    y = f.plotConfig.defaultParamVal * x;
+                } else if (f.id === 2) {
+                    y = 0.5 * f.plotConfig.defaultParamVal * Math.pow(x, 2);
+                } else if (f.id === 3) {
+                    y = Math.PI * Math.pow(x, 2);
+                } else {
+                    y = x;
+                }
+                yValues.push(y);
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: xValues,
+                    datasets: [{
+                        label: f.title,
+                        data: yValues,
+                        borderColor: '#0071e3',
+                        backgroundColor: 'rgba(0, 113, 227, 0.08)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(0,0,0,0.04)' },
+                            title: { display: true, text: f.plotConfig.xVar }
+                        },
+                        y: {
+                            grid: { color: 'rgba(0,0,0,0.04)' },
+                            title: { display: true, text: f.plotConfig.yVar }
+                        }
+                    }
+                }
+            });
+        }
+
+        function closePlotModal() {
+            document.getElementById("plotModal").classList.add("hidden");
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+        }
+    </script>
+</body>
+</html>

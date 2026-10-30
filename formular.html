@@ -1,0 +1,21 @@
+{
+    id: Date.now(), // Erzeugt automatisch eine eindeutige ID
+    title: "Dein Formeltitel",
+    discipline: "Fachrichtung (z.B. Physik, Chemie, Mathematik)",
+    category: "Kategorie (z.B. Mechanik, Thermodynamik)",
+    latex: "Gleichung = \\frac{Zähler}{Nenner}", // LaTeX-Code der Hauptformel
+    description: "Ein kurzer Beschreibungstext, der erklärt, was die Formel aussagt und wofür sie verwendet wird.",
+    legend: {
+        "Gleichung": "Beschreibung des Symbols inklusive Einheit (z.B. [Einheit])",
+        "Zähler": "Beschreibung des Zählers [Einheit]",
+        "Nenner": "Beschreibung des Nenners [Einheit]"
+    },
+    variables: ["Gleichung", "Zähler", "Nenner"], // Liste aller Variablen für die Umstellung
+    rearrangements: {
+        "Gleichung": "Gleichung = \\frac{Zähler}{Nenner}",
+        "Zähler": "Zähler = Gleichung \\cdot Nenner",
+        "Nenner": "Nenner = \\frac{Zähler}{Gleichung}"
+    },
+    plottable: false, // Setze auf true, wenn du einen Plot (Chart.js) hinzufügen möchtest
+    plotConfig: { xVar: "Nenner", yVar: "Gleichung", defaultParamVal: 5, label: "Diagramm Beschreibung" }
+},
